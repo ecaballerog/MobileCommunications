@@ -89,8 +89,8 @@ annotation('textarrow', normx, normy,'String','Ascending Frequency');
 % Reference Sensitivity (dBm)  for Wide Area: -92.2
 
 EIRP_basestation = 61; % [dBm] bear in mind it is per antenna, we will assume one antenna
-Sensitivity_user = -92.2; % [dBm]
-max_pathloss = Sensitivity_user - EIRP_basestation;
+Sensitivity_user = 92.2; % [dBm]
+max_pathloss = -Sensitivity_user - EIRP_basestation;
 f_FDD = 1800; % [MHz]
 Loss_FDD = Losscost231hata(ht, hr, f_FDD, d);
 
@@ -102,14 +102,21 @@ gain = -max_pathloss - Loss_FDD;
 k = find(gain <=0);
 fprintf('Maximum distance without shadow fading is %0.02f km',d(k(1)))
 %% Fast Fading Way 1: Complementary error function
-shadow_fading_parameter = 6 ; % [dB] needs to be parameterized
-shadowing = 0.5 * erfc(Sensitivity_user - E_N/(sqrt(2)*shadow_fading_parameter));
-
-%% Probability distribution Way 1: Complementary error function
+shadow_fading_parameter = 0:1:12 ; % [dB] needs to be parameterized
+shadow_fading_power = -Sensitivity_user - E_N;
+figure()
+for i = 1:size(shadow_fading_parameter,2)
+    shadowing = 0.5 * erfc(shadow_fading_power/(sqrt(2)*shadow_fading_parameter(i)));
+    semilogy(d,shadowing)
+    hold on
+end
+ylim([1e-2 1e0])
+%% Probability distribution Way 2: Gaussian Distribution
+% To be implemented
 mu = 0;
 sigma = 12 * rand; % [dB] first random, then it needs to be parameterized
 gaussian_distribution =  makedist('Lognormal','mu',mu,'sigma',sigma);
-shadowing_random = 0.5 * erfc(max_pathloss/(sqrt(2)*gaussian_distribution.sigma));
+
 
 
 
