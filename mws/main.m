@@ -18,6 +18,8 @@
 clear all;
 close all;
 clc;
+dBm = @(mW) 10*log10(mW);               % dBm As A Function Of Power In milliWatts
+dBW = @(W) 10*log10(W);               % dBW As A Function Of Power In Watts
 
 %      ht - effective base station antenna height [m]
 %           30 <= ht <= 200 m
@@ -77,14 +79,39 @@ annotation('textarrow', normx, normy,'String','Ascending Frequency');
 % 
 % We could also use 5G version of the band 3 (n3)
 %
-% from
-% https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3355411/table/t1-sensors-12-04281
-% Base station antenna power for 1800 MHz is 25W
+% We are going to address a downlink (base station to user)
+% from: 
+% https://www.ntia.doc.gov/files/ntia/meetings/lte_technical_characteristics.pdf
+% Base Station:
+% Power (EIRP) (dBm)/antenna -> 61 
+% Emission Bandwith: 5 MHz
+% Mobile User:
+% Reference Sensitivity (dBm)  for Wide Area: -92.2
 
-p_basestation = 25; % [W] bear in mind it is per sector, we will assuming one sector antenna
+EIRP_basestation = 61; % [dBm] bear in mind it is per antenna, we will assume one antenna
+Sensitivity_user = -92.2; % [dBm]
+max_pathloss = Sensitivity_user - EIRP_basestation;
+f_FDD = 1800; % [MHz]
+Loss_FDD = Losscost231hata(ht, hr, f_FDD, d);
+
+E_N =  EIRP_basestation - Loss_FDD;
+% Special_case no shadowing
+gain = -max_pathloss - Loss_FDD;
+
+% Look for first negative value
+k = find(gain <=0);
+fprintf('Maximum distance without shadow fading is %0.02f km',d(k(1)))
+%% Fast Fading Way 1: Complementary error function
+shadow_fading_parameter = 6 ; % [dB] needs to be parameterized
+shadowing = 0.5 * erfc(Sensitivity_user - E_N/(sqrt(2)*shadow_fading_parameter));
+
+%% Probability distribution Way 1: Complementary error function
+mu = 0;
+sigma = 12 * rand; % [dB] first random, then it needs to be parameterized
+gaussian_distribution =  makedist('Lognormal','mu',mu,'sigma',sigma);
+shadowing_random = 0.5 * erfc(max_pathloss/(sqrt(2)*gaussian_distribution.sigma));
 
 
-% Typical Receiver from iPhone 8
 
 
 
