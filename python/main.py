@@ -1,8 +1,8 @@
 import math
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+
 
 def loss(freq, hr, ht, d):
     freq_log = math.log10(freq)
@@ -27,14 +27,8 @@ def simulate(d, sigma):
     return rec_prob(theta, sigma, pr)
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    # pt comes from data
-    # theta from data
-    # freq from data
-    # vars: dist and sigma
-    # hr, ht - arbitrary
-    # pr ?
+
     dist = [*range(100, 2100)]
     dist = [d/100.0 for d in dist]# in km
     sigma = 3.65  # in dB
@@ -47,12 +41,17 @@ if __name__ == '__main__':
         for d in dist:
             l_tmp.append([f, d, loss(f, hr, ht, d)])
 
-    # l = np.array(l_tmp)
     l_df = pd.DataFrame(l_tmp, columns=["freq", "dist", "loss"])
 
     print(l_df)
 
-    sns.lineplot(data=l_df, x="dist", y="loss", hue="freq")
+    fig = sns.lineplot(data=l_df, x="dist", y="loss", hue="freq")
+    plt.title("Path loss over distance and frequency")
+    plt.xlabel("distance [km]")
+    plt.ylabel("pathloss [dBW]")
+    plt.legend(title="frequency [MHz]")
+    fig = fig.get_figure()
+    fig.savefig("pathloss.png")
     plt.show()
 
     pt = 61
@@ -74,13 +73,14 @@ if __name__ == '__main__':
             l_tmp.append([r[1]["dist"], s, 0.5 * math.erfc(r[1]["shadow_fd_p"] / (math.sqrt(2) * s))])
     shadow_df = pd.DataFrame(l_tmp, columns=["dist", "shadow_param", "shadowing"])
     print(shadow_df)
-    sns.lineplot(data=shadow_df, x="dist", y="shadowing", hue="shadow_param")
+    fig = sns.lineplot(data=shadow_df, x="dist", y="shadowing", hue="shadow_param")
     plt.yscale("log")
+    plt.title("Shadowing over distance and shadowing parameter")
+    plt.xlabel("distance [km]")
+    plt.ylabel("shadowing [dBW]")
+    plt.legend(title="parameter")
     ax = plt.gca()
     ax.set_ylim(1e-2, 1e0)
+    fig = fig.get_figure()
+    fig.savefig("shadowing.png")
     plt.show()
-
-    # simulate(dist, sigma)
-    # put that in loop, for different dist ig, then plot
-
-
