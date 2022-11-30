@@ -103,6 +103,9 @@ k = find(gain <=0);
 fprintf('Maximum distance without shadow fading is %0.02f km',d(k(1)))
 %% Fast Fading Way 1: Complementary error function
 shadow_fading_parameter = 0:1:12 ; % [dB] needs to be parameterized
+for i = 1:length(shadow_fading_parameter)
+    legend_shadow(i) = "\sigma = " + num2str(shadow_fading_parameter(i));
+end
 shadow_fading_power = -Sensitivity_user - E_N;
 figure()
 for i = 1:size(shadow_fading_parameter,2)
@@ -111,6 +114,12 @@ for i = 1:size(shadow_fading_parameter,2)
     hold on
 end
 ylim([1e-2 1e0])
+title({'Link Probability with Shadow fading'});
+xlabel('d [km]');
+ylabel('Link Probability');
+legend(legend_shadow)
+
+
 %% Probability distribution Way 2: Gaussian Distribution
 % To be implemented
 mu = 0;
